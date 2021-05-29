@@ -29,9 +29,8 @@ def main(argv):
                      for x in range(DATE_RANGE)]
         date_str = [x.strftime("%d-%m-%Y") for x in date_list]
 
-        final_df = None
-
         while True:
+            final_df = None
             for INP_DATE in date_str:
                 URL = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={}&date={}".format(
                     DISTRICT_ID, INP_DATE)
