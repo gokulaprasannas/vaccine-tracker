@@ -14,7 +14,7 @@ PAYMENT = None
 DISTRICT_ID = 540  # defaults to Madurai
 
 # Required, minimum available capacity to match the criteria and trigger buzzer
-AVAILABLE_CAPACITY = 0
+AVAILABLE_CAPACITY = 1
 
 # Required, time interval to check for the availability in seconds. Recommended 30s.
 TIME_INTERVAL = 30
