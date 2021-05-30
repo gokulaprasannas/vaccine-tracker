@@ -21,6 +21,7 @@ def main(argv):
         DISTRICT_ID = config.DISTRICT_ID
         AVAILABLE_CAPACITY = config.AVAILABLE_CAPACITY
         TIME_INTERVAL = config.TIME_INTERVAL
+        DOSAGE_TYPE = config.DOSAGE_TYPE
 
         browser_header = {'User-Agent': UserAgent().random}
 
@@ -29,8 +30,13 @@ def main(argv):
                      for x in range(DATE_RANGE)]
         date_str = [x.strftime("%d-%m-%Y") for x in date_list]
 
+        loop_count = 0
+
         while True:
             final_df = None
+            loop_count += 1
+            print(
+                '-------------------------------Loop Count ' + str(loop_count) + '-------------------------------')
             for INP_DATE in date_str:
                 URL = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={}&date={}".format(
                     DISTRICT_ID, INP_DATE)
@@ -47,9 +53,13 @@ def main(argv):
                                 lambda x: x['vaccine'])
                             df['available_capacity'] = df.sessions.apply(
                                 lambda x: x['available_capacity'])
+                            df['available_capacity_dose1'] = df.sessions.apply(
+                                lambda x: x['available_capacity_dose1'])
+                            df['available_capacity_dose2'] = df.sessions.apply(
+                                lambda x: x['available_capacity_dose2'])
                             df['date'] = df.sessions.apply(lambda x: x['date'])
                             df = df[["date", "available_capacity", "vaccine", "min_age_limit", "pincode",
-                                     "name", "state_name", "district_name", "block_name", "fee_type"]]
+                                     "name", "state_name", "district_name", "block_name", "fee_type", "available_capacity_dose1", "available_capacity_dose2"]]
                             if final_df is not None:
                                 final_df = pd.concat([final_df, df])
                             else:
@@ -69,6 +79,14 @@ def main(argv):
 
                             final_df = filter_capacity(
                                 final_df, "available_capacity", AVAILABLE_CAPACITY)
+
+                            if DOSAGE_TYPE != None:
+                                if DOSAGE_TYPE == 'Dose 1':
+                                    final_df = filter_capacity(
+                                        final_df, "available_capacity_dose1", 1)
+                                else:
+                                    final_df = filter_capacity(
+                                        final_df, "available_capacity_dose2", 1)
 
                             if(len(final_df) > 0):
                                 print("Vaccine available for the date - ", INP_DATE)
