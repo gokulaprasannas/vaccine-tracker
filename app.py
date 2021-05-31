@@ -95,7 +95,7 @@ def main(argv):
                                 print("------------Vaccine available for the date - ",
                                       INP_DATE, "----------------")
                                 for (i, row) in final_df.iterrows():
-                                    print(" Hospital -", row['name'], ", Age -", str(row['min_age_limit']), ", Vaccine", row['vaccine'], ', Payment -',
+                                    print(" Hospital -", row['name'], ", Age -", str(row['min_age_limit']), ", Vaccine -", row['vaccine'], ', Payment -',
                                           row['fee_type'], ', Dose 1 -', str(row['available_capacity_dose1']), ', Dose 2 -', str(row['available_capacity_dose2']))
                                 beep()
                             else:
