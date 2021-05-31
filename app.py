@@ -31,11 +31,11 @@ def main(argv):
         loop_count = 0
 
         while True:
-            final_df = None
             loop_count += 1
             print(
                 '-------------------------------Loop Count ' + str(loop_count) + '-------------------------------')
             for INP_DATE in date_str:
+                final_df = None
                 URL = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={}&date={}".format(
                     DISTRICT_ID, INP_DATE)
                 response = requests.get(
@@ -59,10 +59,7 @@ def main(argv):
                             df['date'] = df.sessions.apply(lambda x: x['date'])
                             df = df[["date", "available_capacity", "vaccine", "min_age_limit", "pincode",
                                      "name", "state_name", "district_name", "block_name", "fee_type", "available_capacity_dose1", "available_capacity_dose2"]]
-                            if final_df is not None:
-                                final_df = pd.concat([final_df, df])
-                            else:
-                                final_df = deepcopy(df)
+                            final_df = deepcopy(df)
 
                             if MIN_AGE_LIMIT != None:
                                 final_df = filter_column(
