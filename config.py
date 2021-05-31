@@ -19,5 +19,8 @@ AVAILABLE_CAPACITY = 1
 # Required, Supported values ['Dose 1', 'Dose 2'], Leave it as `DOSAGE_TYPE = None` if no filter required
 DOSAGE_TYPE = 'Dose 1'
 
+# Optional, Copy and paste the exact preferred hospital name from cowin app
+HOSPITAL_NAME = None
+
 # Required, time interval to check for the availability in seconds. Recommended 30s.
 TIME_INTERVAL = 30

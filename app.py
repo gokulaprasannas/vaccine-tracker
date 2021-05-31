@@ -22,14 +22,12 @@ def main(argv):
         AVAILABLE_CAPACITY = config.AVAILABLE_CAPACITY
         TIME_INTERVAL = config.TIME_INTERVAL
         DOSAGE_TYPE = config.DOSAGE_TYPE
-
-        browser_header = {'User-Agent': UserAgent().random}
+        HOSPITAL_NAME = config.HOSPITAL_NAME
 
         base = datetime.datetime.today()
         date_list = [base + datetime.timedelta(days=x)
                      for x in range(DATE_RANGE)]
         date_str = [x.strftime("%d-%m-%Y") for x in date_list]
-
         loop_count = 0
 
         while True:
@@ -40,7 +38,8 @@ def main(argv):
             for INP_DATE in date_str:
                 URL = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={}&date={}".format(
                     DISTRICT_ID, INP_DATE)
-                response = requests.get(URL, headers=browser_header)
+                response = requests.get(
+                    URL, headers={'User-Agent': UserAgent().random})
                 if (response.ok) and ('centers' in json.loads(response.text)):
                     resp_json = json.loads(response.text)['centers']
                     if resp_json is not None:
@@ -76,6 +75,10 @@ def main(argv):
                             if VACCINE_TYPE != None:
                                 final_df = filter_column(
                                     final_df, "vaccine", VACCINE_TYPE)
+
+                            if HOSPITAL_NAME != None:
+                                final_df = filter_column(
+                                    final_df, "name", HOSPITAL_NAME)
 
                             final_df = filter_capacity(
                                 final_df, "available_capacity", AVAILABLE_CAPACITY)
