@@ -23,89 +23,93 @@ def main(argv):
         TIME_INTERVAL = config.TIME_INTERVAL
         DOSAGE_TYPE = config.DOSAGE_TYPE
         HOSPITAL_NAME = config.HOSPITAL_NAME
+        BASE_DATE = config.BASE_DATE
 
-        base = datetime.datetime.today()
-        date_list = [base + datetime.timedelta(days=x)
-                     for x in range(DATE_RANGE)]
-        date_str = [x.strftime("%d-%m-%Y") for x in date_list]
         loop_count = 0
 
         while True:
             loop_count += 1
             print(
                 '-------------------------------Loop Count ' + str(loop_count) + '-------------------------------')
-            for INP_DATE in date_str:
-                final_df = None
-                URL = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={}&date={}".format(
-                    DISTRICT_ID, INP_DATE)
-                response = requests.get(
-                    URL, headers={'User-Agent': UserAgent().random})
-                if (response.ok) and ('centers' in json.loads(response.text)):
-                    resp_json = json.loads(response.text)['centers']
-                    if resp_json is not None:
-                        df = pd.DataFrame(resp_json)
-                        if len(df):
-                            df = df.explode("sessions")
-                            df['min_age_limit'] = df.sessions.apply(
-                                lambda x: x['min_age_limit'])
-                            df['vaccine'] = df.sessions.apply(
-                                lambda x: x['vaccine'])
-                            df['available_capacity'] = df.sessions.apply(
-                                lambda x: x['available_capacity'])
-                            df['available_capacity_dose1'] = df.sessions.apply(
-                                lambda x: x['available_capacity_dose1'])
-                            df['available_capacity_dose2'] = df.sessions.apply(
-                                lambda x: x['available_capacity_dose2'])
-                            df['date'] = df.sessions.apply(lambda x: x['date'])
-                            df = df[["date", "available_capacity", "vaccine", "min_age_limit", "pincode",
-                                     "name", "state_name", "district_name", "block_name", "fee_type", "available_capacity_dose1", "available_capacity_dose2"]]
-                            final_df = deepcopy(df)
+            final_df = None
+            base = datetime.datetime.today()
 
-                            if MIN_AGE_LIMIT != None:
-                                final_df = filter_column(
-                                    final_df, "min_age_limit", MIN_AGE_LIMIT)
+            URL = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={}&date={}".format(
+                DISTRICT_ID, base.strftime("%d-%m-%Y"))
+            response = requests.get(
+                URL, headers={'User-Agent': UserAgent().random})
+            if (response.ok) and ('centers' in json.loads(response.text)):
+                resp_json = json.loads(response.text)['centers']
+                if resp_json is not None:
+                    df = pd.DataFrame(resp_json)
+                    if len(df):
+                        df = df.explode("sessions")
+                        df['min_age_limit'] = df.sessions.apply(
+                            lambda x: x['min_age_limit'])
+                        df['vaccine'] = df.sessions.apply(
+                            lambda x: x['vaccine'])
+                        df['available_capacity'] = df.sessions.apply(
+                            lambda x: x['available_capacity'])
+                        df['available_capacity_dose1'] = df.sessions.apply(
+                            lambda x: x['available_capacity_dose1'])
+                        df['available_capacity_dose2'] = df.sessions.apply(
+                            lambda x: x['available_capacity_dose2'])
+                        df['date'] = df.sessions.apply(lambda x: x['date'])
+                        df = df[["date", "available_capacity", "vaccine", "min_age_limit", "pincode",
+                                 "name", "state_name", "district_name", "block_name", "fee_type", "available_capacity_dose1", "available_capacity_dose2"]]
+                        final_df = deepcopy(df)
 
-                            if PAYMENT != None:
-                                final_df = filter_column(
-                                    final_df, "fee_type", PAYMENT)
+                        if MIN_AGE_LIMIT != None:
+                            final_df = filter_column(
+                                final_df, "min_age_limit", MIN_AGE_LIMIT)
 
-                            if VACCINE_TYPE != None:
-                                final_df = filter_column(
-                                    final_df, "vaccine", VACCINE_TYPE)
+                        if PAYMENT != None:
+                            final_df = filter_column(
+                                final_df, "fee_type", PAYMENT)
 
-                            if HOSPITAL_NAME != None:
-                                final_df = filter_column(
-                                    final_df, "name", HOSPITAL_NAME)
+                        if VACCINE_TYPE != None:
+                            final_df = filter_column(
+                                final_df, "vaccine", VACCINE_TYPE)
 
-                            final_df = filter_capacity(
-                                final_df, "available_capacity", AVAILABLE_CAPACITY)
+                        if HOSPITAL_NAME != None:
+                            final_df = filter_column(
+                                final_df, "name", HOSPITAL_NAME)
 
-                            if DOSAGE_TYPE != None:
-                                if DOSAGE_TYPE == 'Dose 1':
-                                    final_df = filter_capacity(
-                                        final_df, "available_capacity_dose1", 1)
-                                else:
-                                    final_df = filter_capacity(
-                                        final_df, "available_capacity_dose2", 1)
+                        final_df = filter_capacity(
+                            final_df, "available_capacity", AVAILABLE_CAPACITY)
 
-                            if(len(final_df) > 0):
-                                print("------------Vaccine available for the date - ",
-                                      INP_DATE, "----------------")
-                                for (i, row) in final_df.iterrows():
-                                    print(" Hospital -", row['name'], ", Age -", str(row['min_age_limit']), ", Vaccine -", row['vaccine'], ', Payment -',
-                                          row['fee_type'], ', Dose 1 -', str(row['available_capacity_dose1']), ', Dose 2 -', str(row['available_capacity_dose2']))
-                                beep()
+                        base = base + datetime.timedelta(days=BASE_DATE)
+                        date_list = [base + datetime.timedelta(days=x)
+                                     for x in range(DATE_RANGE)]
+                        date_str = [x.strftime("%d-%m-%Y") for x in date_list]
+                        final_df = filter_date(
+                            final_df, "date", date_str)
+
+                        if DOSAGE_TYPE != None:
+                            if DOSAGE_TYPE == 'Dose 1':
+                                final_df = filter_capacity(
+                                    final_df, "available_capacity_dose1", 1)
                             else:
-                                print(
-                                    "No vaccine available for the date - ", INP_DATE)
+                                final_df = filter_capacity(
+                                    final_df, "available_capacity_dose2", 1)
+
+                        if(len(final_df) > 0):
+                            print(
+                                "------------Vaccine available-----------------")
+                            for (i, row) in final_df.iterrows():
+                                print("Date -", row['date'], ", Hospital -", row['name'], ", Age -", str(row['min_age_limit']), ", Vaccine -", row['vaccine'], ', Payment -',
+                                      row['fee_type'], ', Dose 1 -', str(row['available_capacity_dose1']), ', Dose 2 -', str(row['available_capacity_dose2']))
+                            beep()
                         else:
-                            print("No vaccine available for the date - ", INP_DATE)
+                            print(
+                                "No vaccine available")
                     else:
-                        print("No rows in the data Extracted from the API")
+                        print("No vaccine available")
+                else:
+                    print("No rows in the data Extracted from the API")
             time.sleep(TIME_INTERVAL)
     except Exception as e:
         print('Exception occurred', e)
-        sys.exit(2)
 
 
 def filter_column(df, col, value):
@@ -115,6 +119,11 @@ def filter_column(df, col, value):
 
 def filter_capacity(df, col, value):
     df_temp = deepcopy(df.loc[df[col] >= value, :])
+    return df_temp
+
+
+def filter_date(df, col, value):
+    df_temp = deepcopy(df.loc[df[col].isin(value), :])
     return df_temp
 
 

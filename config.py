@@ -1,4 +1,7 @@
-# Required, Range of the date to check, base date will be the current date.
+# Required, Date to start checking, 0 means today, 1 means tommorrow.. etc.
+BASE_DATE = 1
+
+# Required, Range of the date to check, base date will be BASE_DATE.
 DATE_RANGE = 5
 
 # Required, Supported values [18,45], Leave it as `MIN_AGE_LIMIT = None` if no filter required
